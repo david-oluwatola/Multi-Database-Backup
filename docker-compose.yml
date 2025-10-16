@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - dba_network
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysqlpass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - dba_network
+
+  # oracle-xe:
+  #   image: gvenzl/oracle-xe:23.3.0  # use small dev-friendly image
+  #   restart: always
+  #   environment:
+  #     ORACLE_PASSWORD: ${ORACLE_PASSWORD:-oraclepass}
+  #   ports:
+  #     - "1521:1521"
+  #   volumes:
+  #     - oracle_data:/opt/oracle/oradata
+
+  metabase:
+    image: metabase/metabase
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: postgres
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: ${POSTGRES_PASSWORD:-postgrespass}
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+    networks:
+      - dba_network
+
+volumes:
+  pg_data:
+  mysql_data:
+  oracle_data:
+
+networks:
+  dba_network:
+    driver: bridge
