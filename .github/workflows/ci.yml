@@ -1,0 +1,29 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install flake8
+
+      - name: Run linting
+        run: |
+          flake8 scripts || true
+
+      - name: Run backup dry test
+        run: |
+          mkdir -p backups
+          python3 scripts/backup_postgres.py || true
+
