@@ -52,6 +52,27 @@ services:
     networks:
       - dba_network
 
+  backup-runner:
+    build: .
+    image: multi-db-backup-runner:latest
+    depends_on:
+      - postgres
+      - mysql
+    volumes:
+      - ./scripts:/app/scripts:ro      # mount scripts into container
+      - ./backups:/app/backups         # persist backups
+      - ./.env:/app/.env:ro            # load env vars (optional)
+    networks:
+      - dba_network
+    environment:
+      - BACKUP_DIR=/app/backups
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - PGHOST=${PGHOST}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["python3 /app/scripts/backup_postgres.py"]
+
+
 volumes:
   pg_data:
   mysql_data:

@@ -2,6 +2,11 @@
 import subprocess, hashlib, os, time, sqlite3
 from datetime import datetime
 from pathlib import Path
+import os
+
+
+pg_host = os.getenv("PGHOST", "localhost")
+
 
 BACKUP_DIR = Path(os.getenv("BACKUP_DIR", "../backups"))
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
@@ -33,7 +38,7 @@ def run_pg_dump():
     timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     out = BACKUP_DIR / f"postgres-{timestamp}.dump"
     start = time.time()
-    cmd = ["pg_dump", "-h", "localhost", "-p", "5432", "-U", "postgres", "-F", "c", "-b", "-v", "-f", str(out), "postgres"]
+    cmd = ["pg_dump", "-h", pg_host, "-p", "5432", "-U", "postgres", "-F", "c", "-b", "-v", "-f", str(out), "postgres"]
     env = os.environ.copy()
     env["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "postgrespass")
     try:
