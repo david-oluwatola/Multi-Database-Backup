@@ -23,6 +23,7 @@ RUN if [ -f /app/requirements.txt ]; then pip install --no-cache-dir -r /app/req
 
 # Copy scripts folder into the image (mounted volume can override in dev)
 COPY scripts /app/scripts
+COPY ./scripts/init_script/init_db.sql /docker-entrypoint-initdb.d/
 
 # Ensure scripts are executable
 RUN chmod -R +x /app/scripts
@@ -30,4 +31,3 @@ RUN chmod -R +x /app/scripts
 # Default entrypoint (can be overridden by docker-compose run ...)
 ENTRYPOINT ["python3"]
 CMD ["--version"]
-

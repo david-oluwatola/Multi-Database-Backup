@@ -1,11 +1,10 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespass}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgrespass}
     ports:
       - "5432:5432"
     volumes:
@@ -58,6 +57,7 @@ services:
     depends_on:
       - postgres
       - mysql
+      - backup-runner-db
     volumes:
       - ./scripts:/app/scripts:ro      # mount scripts into container
       - ./backups:/app/backups         # persist backups
@@ -68,16 +68,40 @@ services:
       - BACKUP_DIR=/app/backups
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - METADATA_DB_NAME=${METADATA_DB_NAME}
+      - METADATA_DB_USER=${METADATA_DB_USER}
+      - METADATA_DB_PASSWORD=${METADATA_DB_PASSWORD}
       - PGHOST=${PGHOST}
+      - POSTGRES_HOST=${POSTGRES_HOST:-localhost}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgrespass}
     entrypoint: ["/bin/sh", "-c"]
     command: ["python3 /app/scripts/backup_postgres.py"]
 
+  backup-runner-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_backup_data:/var/lib/postgresql/data
+    networks:
+      - dba_network
+    environment:
+      - POSTGRES_DB=${METADATA_DB_NAME}
+      - POSTGRES_USER=${METADATA_DB_USER}
+      - POSTGRES_PASSWORD=${METADATA_DB_PASSWORD}
 
 volumes:
   pg_data:
   mysql_data:
   oracle_data:
+  pg_backup_data:
 
 networks:
   dba_network:
     driver: bridge
+
+
+#SMTP
+# ljfe xuou vhuv gaxv
